@@ -14,7 +14,5 @@ class SignupSerializer(serializers.ModelSerializer):
         model = Profile
         fields = '__all__'
 
-class AuthSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ['phone']
+class AuthSerializer(serializers.Serializer):
+    phone = serializers.CharField(max_length=12,min_length=12)
