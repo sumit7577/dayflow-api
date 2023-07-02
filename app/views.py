@@ -56,10 +56,8 @@ class ProfileView(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = Profile.objects.get(user=self.request.user)
-        request.data._mutable = True
         request.data['phone'] = instance.phone
         request.data['user'] = self.request.user.id
-        request.data._mutable = False
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)

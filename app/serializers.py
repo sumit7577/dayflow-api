@@ -19,9 +19,5 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = '__all__'
 
-    def update(self, instance, validated_data):
-        instance.save()
-        return instance
-
 class AuthSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=12,min_length=12)
