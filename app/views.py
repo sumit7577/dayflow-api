@@ -6,8 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from app.serializers import *
 from app.models import *
-from datetime import date, datetime
-from rest_framework import mixins
 from rest_framework.authtoken.models import Token
 
 
@@ -26,12 +24,6 @@ class SignupView(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        super().update(request,*args,**kwargs)
-
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
     
 
 class LoginView(APIView):
@@ -50,8 +42,8 @@ class LoginView(APIView):
         return Response(serializer.errors, status=400)
     
     
-class ProfileView(viewsets.ReadOnlyModelViewSet):
-    serializer_class = SignupSerializer
+class ProfileView(viewsets.ModelViewSet):
+    serializer_class = ProfileSerializer
     authentication_classes = [TokenAuthentication,SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -61,5 +53,18 @@ class ProfileView(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Profile.objects.filter(user=self.request.user)
     
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = Profile.objects.get(user=self.request.user)
+        request.data._mutable = True
+        request.data['phone'] = instance.phone
+        request.data['user'] = self.request.user.id
+        request.data._mutable = False
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+    
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
