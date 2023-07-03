@@ -3,11 +3,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import viewsets
+from rest_framework import viewsets,filters
 from app.serializers import *
 from app.models import *
 from rest_framework.authtoken.models import Token
+from rest_framework.pagination import PageNumberPagination
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
 
 # Create your views here.
 class SignupView(viewsets.ModelViewSet):
@@ -66,3 +71,20 @@ class ProfileView(viewsets.ModelViewSet):
     
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
+    
+
+class SearchView(viewsets.ReadOnlyModelViewSet):
+    serializer_class = SignupSerializer
+    authentication_classes = [TokenAuthentication,SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['id']
+
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        return Profile.objects.select_related('user').filter(user__username__contains=username)
+    
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

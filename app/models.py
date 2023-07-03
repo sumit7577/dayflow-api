@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 class Profile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     phone = models.CharField(max_length=12,null=False,blank=False,unique=True)
+    profile_picture = models.ImageField(upload_to="profile_pictures",null=True,blank=True)
     proffession = models.JSONField(null=True,blank=True)
     interest = models.JSONField(null=True,blank=True)
     working_days = models.JSONField(null=True,blank=True)
