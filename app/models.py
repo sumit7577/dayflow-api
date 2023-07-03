@@ -7,6 +7,7 @@ class Profile(models.Model):
     phone = models.CharField(max_length=12,null=False,blank=False,unique=True)
     proffession = models.JSONField(null=True,blank=True)
     interest = models.JSONField(null=True,blank=True)
+    working_days = models.JSONField(null=True,blank=True)
     working_time_start = models.TimeField(null=True,blank=True)
     working_time_end = models.TimeField(null=True,blank=True)
     about = models.CharField(max_length=100,null=True,blank=True)

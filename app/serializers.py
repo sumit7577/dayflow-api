@@ -18,6 +18,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = '__all__'
+        depth = 1
 
 class AuthSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=12,min_length=12)
