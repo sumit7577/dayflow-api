@@ -73,20 +73,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dayflowApi.wsgi.application'
 
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100
-}
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'prod': {
+    'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
-    'default':{
+    'defaults':{
         "ENGINE":'django.db.backends.mysql',
         "NAME":"dayflow$default",
         "USER":"dayflow",
