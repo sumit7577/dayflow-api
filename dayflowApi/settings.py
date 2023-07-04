@@ -82,9 +82,17 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    'prod': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'default':{
+        "ENGINE":'django.db.backends.mysql',
+        "NAME":"dayflow$default",
+        "USER":"dayflow",
+        "PASSWORD":"idontknow@1",
+        "HOST":"dayflow.mysql.pythonanywhere-services.com",
+        "PORT":"3306"
     }
 }
 
