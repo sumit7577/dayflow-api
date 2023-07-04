@@ -85,7 +85,7 @@ class SearchView(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         username = self.kwargs['username']
-        return Profile.objects.select_related('user').filter(Q(user__username__contains=username) | Q(proffession__contains=username))
+        return Profile.objects.select_related('user').filter(Q(user__username__contains=username))
     
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
