@@ -9,11 +9,27 @@ from app.models import *
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
+import math,random,requests
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
     page_size_query_param = 'page_size'
     max_page_size = 1000
+
+
+def generateOTP() :
+    digits = "0123456789"
+    OTP = ""
+    for i in range(6) :
+        OTP += digits[math.floor(random.random() * 10)]
+ 
+    return OTP
+
+
+def createOtp(number,otp):
+    req=  f"https://www.fast2sms.com/dev/bulkV2?authorization=fCekzJi6gcbUSVFm7prx9oKstaTBWOqAdwj421MYPQRGuvXLynmK6PTyAaJdGCc9xXoiq3N8jvF5U2u0&route=otp&variables_values={otp}&flash=0&numbers={number}"
+    makeRequest = requests.get(req)
+    return makeRequest.json()
 
 # Create your views here.
 class SignupView(viewsets.ModelViewSet):
@@ -22,15 +38,24 @@ class SignupView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user = User.objects.create_user(username=serializer.data['user']['username'],email=serializer.data['user']['email'])
-        Profile.objects.create(user=user,phone=serializer.data['phone'],
+        return Profile.objects.create(user=user,phone=serializer.data['phone'],
                                proffession=serializer.data.get("proffession"),
                                interest= serializer.data.get("interest"),
                                working_time_start=serializer.data.get("working_time_start"),
                                working_time_end= serializer.data.get("working_time_end"))
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-    
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        genOtp = generateOTP()
+        otp = createOtp(request.data['phone'][2:],genOtp)
+        if otp['return']:
+            user = self.perform_create(serializer)
+            Otp.objects.create(otp=genOtp,number=user)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=201, headers=headers)
+        else:
+            return Response({"success": False, "message": "Please enter valid phone number!"}, status=400)
 
 class LoginView(APIView):
     """Login The User Using Auth Token"""
@@ -38,14 +63,39 @@ class LoginView(APIView):
         serializer = AuthSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                user = User.objects.get(profile__phone=request.data["phone"])
+                user = Profile.objects.get(phone=request.data["phone"])
                 if user:
-                    token = Token.objects.get_or_create(user=user)
-                    return JsonResponse({"success": True, "message": token[0].key}, status=200)
+                    otps = generateOTP()
+                    phone = request.data['phone'][2:]
+                    otp = createOtp(phone,otps)
+                    if otp['return']:
+                        Otp.objects.create(otp=otps,number=user)
+                        return JsonResponse({"success": True, "message": "Otp Sent Successfully!"}, status=200)
+                    else:
+                        return JsonResponse({"success": True, "message": "Please Enter Valid number!"}, status=400)
                 return Response({"success": False, "message": "Phone number not found!"}, status=400)
             except Exception as e:
                 return Response({"success": False, "message": "Phone number not found!"}, status=400)
         return Response(serializer.errors, status=400)
+    
+    
+class OtpView(APIView):
+    def post(self,request):
+        serializer = OtpSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                otp = Otp.objects.filter(number__phone = request.data['phone']).order_by("-date_sent")
+                if otp[0].otp ==request.data['otp']:
+                    user = User.objects.get(profile__phone= request.data['phone'])
+                    token = Token.objects.get_or_create(user=user)
+                    Otp.objects.filter(number__phone=request.data['phone']).delete()
+                    return JsonResponse({"success": True, "message": token[0].key}, status=200)
+                
+                return Response({"success": False, "message": "Please Enter Valid Otp"}, status=400)
+            except Exception as e:
+                return Response({"success": False, "message": "Phone number not found!"}, status=400)
+        return Response(serializer.errors, status=400)
+
     
     
 class ProfileView(viewsets.ModelViewSet):

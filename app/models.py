@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 # Create your models here.
 
 class Profile(models.Model):
@@ -15,3 +16,12 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return self.user.username
+
+
+class Otp(models.Model):
+    otp = models.CharField(max_length=6,null=False,blank=False)
+    number = models.ForeignKey(Profile,on_delete=models.CASCADE)
+    date_sent = models.DateTimeField(blank=False,null=False,default=timezone.now())
+
+    def __str__(self) -> str:
+        return self.number.phone
