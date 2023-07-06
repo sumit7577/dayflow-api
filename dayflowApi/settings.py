@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-pd=!e^a6jg-!n@_p4=^upq^v!7ewuvv%4^5q4e$kcb6a70ru#1
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
+AUTH_USER_MODEL = "app.CustomUser"
 
 # Application definition
 
@@ -264,7 +264,7 @@ JAZZMIN_SETTINGS = {
     # - carousel
     "changeform_format": "horizontal_tabs",
     # override change forms on a per modeladmin basis
-    "changeform_format_overrides": {"auth.user": "horizontal_tabs", "auth.group": "vertical_tabs"},
+    "changeform_format_overrides": {"app.CustomUser": "horizontal_tabs", "auth.group": "vertical_tabs"},
     # Add a language dropdown into the admin
     "language_chooser": False,
 }

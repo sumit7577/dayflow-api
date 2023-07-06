@@ -37,7 +37,7 @@ class SignupView(viewsets.ModelViewSet):
     serializer_class = SignupSerializer
 
     def perform_create(self, serializer):
-        user = User.objects.create_user(username=serializer.data['user']['username'],email=serializer.data['user']['email'])
+        user = CustomUser.objects.create_user(username=serializer.data['user']['username'],email=serializer.data['user']['email'])
         return Profile.objects.create(user=user,phone=serializer.data['phone'],
                                proffession=serializer.data.get("proffession"),
                                interest= serializer.data.get("interest"),
@@ -84,7 +84,7 @@ class OtpView(APIView):
         serializer = OtpSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                otp = Otp.objects.filter(number__phone = request.data['phone']).order_by("-date_sent")
+                otp = Otp.objects.filter(number__phone = request.data['phone']).order_by("id")
                 if otp[0].otp ==request.data['otp']:
                     user = User.objects.get(profile__phone= request.data['phone'])
                     token = Token.objects.get_or_create(user=user)
