@@ -84,9 +84,9 @@ class OtpView(APIView):
         serializer = OtpSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                otp = Otp.objects.filter(number__phone = request.data['phone']).order_by("id")
+                otp = Otp.objects.filter(number__phone = request.data['phone']).order_by("-id")
                 if otp[0].otp ==request.data['otp']:
-                    user = User.objects.get(profile__phone= request.data['phone'])
+                    user = CustomUser.objects.get(profile__phone= request.data['phone'])
                     token = Token.objects.get_or_create(user=user)
                     Otp.objects.filter(number__phone=request.data['phone']).delete()
                     return JsonResponse({"success": True, "message": token[0].key}, status=200)
