@@ -56,6 +56,7 @@ class SignupView(viewsets.ModelViewSet):
             return Response(serializer.data, status=201, headers=headers)
         else:
             return Response({"success": False, "message": "Please enter valid phone number!"}, status=400)
+        
 
 class LoginView(APIView):
     """Login The User Using Auth Token"""
@@ -110,10 +111,12 @@ class ProfileView(viewsets.ModelViewSet):
         return Profile.objects.filter(user=self.request.user)
     
     def update(self, request, *args, **kwargs):
+        request.data._mutable = True
         partial = kwargs.pop('partial', False)
         instance = Profile.objects.get(user=self.request.user)
         request.data['phone'] = instance.phone
         request.data['user'] = self.request.user.id
+        request.data._mutable = False
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
